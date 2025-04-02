@@ -6,8 +6,9 @@ LOG_DIR := /tmp/osquery_logs_$(shell whoami)
 PID_FILE := /tmp/osquery_temp.pid
 BUILD_DIR := ./bin
 APP_NAME := osquery
+API_NAME := api
 
-.PHONY: deamon-run deamon-stop deamon-status deamon-setup deamon-cleanup gen build run docker-up docker-down db-up
+.PHONY: deamon-run deamon-stop deamon-status deamon-setup deamon-cleanup gen build run build-api api docker-up docker-down db-up
 
 # Deamon
 deamon-setup:
@@ -68,6 +69,14 @@ build: gen
 	@echo "Building application..."
 	@mkdir -p $(BUILD_DIR)
 	go build -o $(BUILD_DIR)/$(APP_NAME) ./cmd/osquery
+
+build-api: gen 
+	@echo "Building api..."
+	@mkdir -p $(BUILD_DIR)
+	go build -o $(BUILD_DIR)/$(API_NAME) ./cmd/api
+
+api: build-api
+	SECFIX_CONNECTION_STRING="postgres://postgres:postgres@localhost:5430/postgres?sslmode=disable" $(BUILD_DIR)/$(API_NAME) $(ARGS) 
 
 run: build
 	SECFIX_CONNECTION_STRING="postgres://postgres:postgres@localhost:5430/postgres?sslmode=disable" $(BUILD_DIR)/$(APP_NAME) -socket-path=$(SOCKET_PATH) $(ARGS)

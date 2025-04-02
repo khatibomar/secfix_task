@@ -1,8 +1,8 @@
-package main
+package internal
 
 import "runtime/debug"
 
-func getCommitHash() string {
+func GetCommitHash() string {
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
 		return "unknown"
@@ -16,7 +16,7 @@ func getCommitHash() string {
 	return "unknown"
 }
 
-func getGitTag() string {
+func GetGitTag() string {
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
 		return "unknown"

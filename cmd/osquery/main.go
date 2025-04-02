@@ -10,11 +10,12 @@ import (
 	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/pgtype"
 
+	"github.com/khatibomar/secfix_challenge/internal"
 	"github.com/khatibomar/secfix_challenge/internal/database"
 	"github.com/osquery/osquery-go"
 )
 
-type Config struct {
+type config struct {
 	Socket struct {
 		Path        string
 		OpenTimeout int
@@ -22,7 +23,7 @@ type Config struct {
 	Verbose bool
 }
 
-func parseFlags(cfg *Config) {
+func parseFlags(cfg *config) {
 	flag.StringVar(&cfg.Socket.Path, "socket-path", "/var/run/osquery.sock", "Path to osquery socket file")
 	flag.IntVar(&cfg.Socket.OpenTimeout, "socket-open-timeout", 2, "Timeout when trying to open socket connection")
 	flag.BoolVar(&cfg.Verbose, "verbose", false, "Enable verbose output, good for debugging")
@@ -30,14 +31,14 @@ func parseFlags(cfg *Config) {
 }
 
 func main() {
-	var cfg Config
+	var cfg config
 	var err error
 
 	ctx := context.Background()
 	logger := log.Default()
 
-	logger.Println("Commit Hash:", getCommitHash())
-	logger.Println("Git Tag:", getGitTag())
+	logger.Println("Commit Hash:", internal.GetCommitHash())
+	logger.Println("Git Tag:", internal.GetGitTag())
 
 	parseFlags(&cfg)
 
@@ -59,8 +60,13 @@ func main() {
 	defer conn.Close(ctx)
 
 	db := database.New(conn)
-	app := NewApplication(logger, db, client)
-	app.Verbose = cfg.Verbose
+	app := &Application{
+		osQueryClient: client,
+		db:            db,
+		log:           logger,
+		verbose:       cfg.Verbose,
+	}
+
 	if err := realMain(ctx, app); err != nil {
 		log.Fatalf("Application failed to run: %v", err)
 	}

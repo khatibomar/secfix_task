@@ -18,22 +18,10 @@ type OSQueryClient interface {
 }
 
 type Application struct {
-	OSQueryClient OSQueryClient
-	Database      database.Querier
-	Log           *log.Logger
-	Verbose       bool
-}
-
-func NewApplication(
-	logger *log.Logger,
-	db database.Querier,
-	osQueryClient OSQueryClient,
-) *Application {
-	return &Application{
-		OSQueryClient: osQueryClient,
-		Database:      db,
-		Log:           logger,
-	}
+	osQueryClient OSQueryClient
+	db            database.Querier
+	log           *log.Logger
+	verbose       bool
 }
 
 func (app *Application) Run(ctx context.Context) error {
@@ -43,7 +31,7 @@ func (app *Application) Run(ctx context.Context) error {
 	var osqueryVersion string
 
 	app.debug("Querying OS version")
-	resp, err := app.OSQueryClient.QueryRowContext(ctx, osVersionQuery)
+	resp, err := app.osQueryClient.QueryRowContext(ctx, osVersionQuery)
 	if err != nil {
 		return fmt.Errorf("failed to get OS version: %w", err)
 	}
@@ -51,7 +39,7 @@ func (app *Application) Run(ctx context.Context) error {
 	app.info("OS version: %s", osVersion)
 
 	app.debug("Querying OSQuery version")
-	resp, err = app.OSQueryClient.QueryRowContext(ctx, osQueryVersionQuery)
+	resp, err = app.osQueryClient.QueryRowContext(ctx, osQueryVersionQuery)
 	if err != nil {
 		return fmt.Errorf("failed to get OSQuery version: %w", err)
 	}
@@ -59,7 +47,7 @@ func (app *Application) Run(ctx context.Context) error {
 	app.info("OSQuery version: %s", osqueryVersion)
 
 	app.debug("Querying installed apps")
-	appsQueryResp, err := app.OSQueryClient.QueryRowsContext(ctx, appsQuery)
+	appsQueryResp, err := app.osQueryClient.QueryRowsContext(ctx, appsQuery)
 	if err != nil {
 		return fmt.Errorf("failed to get installed apps: %w", err)
 	}
@@ -73,7 +61,7 @@ func (app *Application) Run(ctx context.Context) error {
 
 	app.debug("Saving results to the database...")
 
-	versionSnapshot, err := app.Database.InsertOSSnapshot(ctx, database.InsertOSSnapshotParams{
+	versionSnapshot, err := app.db.InsertOSSnapshot(ctx, database.InsertOSSnapshotParams{
 		OsVersion:      osVersion,
 		OsQueryVersion: osqueryVersion,
 	})
@@ -82,7 +70,7 @@ func (app *Application) Run(ctx context.Context) error {
 	}
 	app.info("versions snapshot taken successfully with id = %d", versionSnapshot.ID)
 
-	appsSnapshot, err := app.Database.InsertAppsSnapshot(ctx, appNames)
+	appsSnapshot, err := app.db.InsertAppsSnapshot(ctx, appNames)
 	if err != nil {
 		return fmt.Errorf("failed to take apps snap shot: %w", err)
 	}
@@ -92,11 +80,11 @@ func (app *Application) Run(ctx context.Context) error {
 }
 
 func (app *Application) debug(format string, v ...any) {
-	if app.Verbose {
-		app.Log.Printf("APP: [DEBUG] "+format, v...)
+	if app.verbose {
+		app.log.Printf("APP: [DEBUG] "+format, v...)
 	}
 }
 
 func (app *Application) info(format string, v ...any) {
-	app.Log.Printf("APP: [INFO] "+format, v...)
+	app.log.Printf("APP: [INFO] "+format, v...)
 }

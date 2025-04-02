@@ -4,6 +4,7 @@ go 1.24.1
 
 require (
 	github.com/jackc/pgx/v5 v5.7.4
+	github.com/julienschmidt/httprouter v1.3.0
 	github.com/osquery/osquery-go v0.0.0-20250131154556-629f995b6947
 )
 
