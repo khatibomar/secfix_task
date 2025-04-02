@@ -1,12 +1,16 @@
-prerequiests:
+# Prerequisite:
 - osquery
+- dbmate
+- docker
+- make
+- sqlc
 
-# Installation
+# Usage 
 
 I am running this on macos, so first install [queryos](https://osquery.io/downloads)
 
 ```sh
-sh run_osquery_temp.sh
+make deamon-start
 ```
 
 if all good then you will see the following output
@@ -17,8 +21,31 @@ if all good then you will see the following output
 ```
 > the tmp socket name differs each time
 
-after that run go app with specifying temp socket
+after that, to take snapshot of `os version`, `os query version` and `installed apps` run this.
 
 ```sh
-go run main.go --socket-path=/tmp/osquery.omarelkhatib.29085.em
+make app --socket-path=/tmp/osquery.omarelkhatib.29085.em -verbose
+```
+
+time to expose this data as an API to run the api
+
+```sh
+make api
+```
+
+we can test api using `curl`
+
+
+```sh
+make curl
+```
+or with small UI app I created 
+
+```sh
+make ui
+```
+
+last we can shutdown the deamon with 
+```sh 
+make deamon-stop
 ```

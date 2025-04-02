@@ -9,7 +9,7 @@ APP_NAME := osquery
 API_NAME := api
 UI_NAME := ui
 
-.PHONY: deamon-run deamon-stop deamon-status deamon-setup deamon-cleanup gen build run build-api api docker-up docker-down db-up ui build-ui
+.PHONY: deamon-run deamon-stop deamon-status deamon-setup deamon-cleanup gen build-app app build-api api docker-up docker-down db-up ui build-ui
 
 # Deamon
 deamon-setup:
@@ -66,7 +66,7 @@ deamon-status:
 gen:
 	sqlc generate
 
-build: gen
+build-app: gen
 	@echo "Building application..."
 	@mkdir -p $(BUILD_DIR)
 	go build -o $(BUILD_DIR)/$(APP_NAME) ./cmd/osquery
@@ -87,7 +87,7 @@ ui: build-ui
 api: build-api
 	SECFIX_CONNECTION_STRING="postgres://postgres:postgres@localhost:5430/postgres?sslmode=disable" $(BUILD_DIR)/$(API_NAME) $(ARGS) 
 
-run: build
+app: build
 	SECFIX_CONNECTION_STRING="postgres://postgres:postgres@localhost:5430/postgres?sslmode=disable" $(BUILD_DIR)/$(APP_NAME) -socket-path=$(SOCKET_PATH) $(ARGS)
 
 # Docker
