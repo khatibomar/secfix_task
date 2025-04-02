@@ -5,8 +5,9 @@ CONFIG_PATH := /var/osquery/osquery.conf
 LOG_DIR := /tmp/osquery_logs_$(shell whoami)
 PID_FILE := /tmp/osquery_temp.pid
 
-.PHONY: deamon-run deamon-stop deamon-status deamon-setup deamon-cleanup run
+.PHONY: deamon-run deamon-stop deamon-status deamon-setup deamon-cleanup gen run docker-up docker-down db-up
 
+# Deamon
 deamon-setup:
 	sudo cp /var/osquery/osquery.example.conf /var/osquery/osquery.conf
 	sudo cp /var/osquery/io.osquery.agent.plist /Library/LaunchDaemons
@@ -57,5 +58,23 @@ deamon-status:
 		echo "osqueryd is not running"; \
 	fi
 
-run:
+# Apps
+gen:
+	sqlc generate
+
+run: gen 
 	go run ./cmd/osquery -socket-path=$(SOCKET_PATH) $(ARGS)
+
+# Docker
+docker-up:
+	@echo "Building docker image..."
+	docker compose up -d 
+
+docker-down:
+	@echo "Stopping docker containers..."
+	docker compose down
+
+# database
+db-up:
+	@echo "Running migrations..."
+	DATABASE_URL="postgres://postgres@127.0.0.1:5430/postgres?sslmode=disable" dbmate -d ./data/sql/migrations up

@@ -6,6 +6,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v5/pgtype"
+
+	"github.com/khatibomar/secfix_challenge/internal/database"
 	"github.com/osquery/osquery-go"
 )
 
@@ -28,6 +32,8 @@ func main() {
 	var cfg Config
 	var err error
 
+	logger := log.Default()
+
 	ctx := context.Background()
 
 	parseFlags(&cfg)
@@ -38,7 +44,14 @@ func main() {
 	}
 	defer client.Close()
 
-	app := NewApplication(client)
+	conn, err := pgx.Connect(ctx, "postgres://postgres:postgres@localhost:5430/postgres?sslmode=disable")
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer conn.Close(ctx)
+
+	db := database.New(conn)
+	app := NewApplication(logger, db, client)
 	if cfg.Verbose {
 		app.Verbose = true
 	}
