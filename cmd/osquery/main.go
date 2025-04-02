@@ -3,16 +3,11 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/osquery/osquery-go"
 )
-
-type Application struct {
-	OSQueryClient *osquery.ExtensionManagerClient
-}
 
 type Config struct {
 	SocketPath string
@@ -31,24 +26,19 @@ func main() {
 	var cfg Config
 	var err error
 
+	ctx := context.Background()
+
 	parseFlags(&cfg)
 
-	app := Application{}
-	app.OSQueryClient, err = osquery.NewClient(cfg.SocketPath, 2*time.Second)
+	client, err := osquery.NewClient(cfg.SocketPath, 2*time.Second)
 	if err != nil {
 		log.Fatalf("Failed to create osquery client: %v", err)
 	}
-	defer app.OSQueryClient.Close()
+	defer client.Close()
 
-	ctx := context.Background()
-	query := "SELECT computer_name FROM system_info;"
-	resp, err := app.OSQueryClient.QueryContext(ctx, query)
-	if err != nil {
-		log.Fatalf("Query failed: %v", err)
-	}
+	app := NewApplication(client)
 
-	fmt.Println("Query Results:")
-	for _, row := range resp.Response {
-		fmt.Println(row)
+	if err = app.Run(ctx); err != nil {
+		log.Fatalf("Application failed to run: %v", err)
 	}
 }
