@@ -58,4 +58,4 @@ deamon-status:
 	fi
 
 run:
-	go run ./cmd/osquery -socket-path=$(SOCKET_PATH)
+	go run ./cmd/osquery -socket-path=$(SOCKET_PATH) $(ARGS)

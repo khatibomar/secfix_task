@@ -14,11 +14,13 @@ type Config struct {
 		Path        string
 		OpenTimeout int
 	}
+	Verbose bool
 }
 
 func parseFlags(cfg *Config) {
 	flag.StringVar(&cfg.Socket.Path, "socket-path", "/var/run/osquery.sock", "Path to osquery socket file")
 	flag.IntVar(&cfg.Socket.OpenTimeout, "socket-open-timeout", 2, "Timeout when trying to open socket connection")
+	flag.BoolVar(&cfg.Verbose, "verbose", false, "Enable verbose output, good for debugging")
 	flag.Parse()
 }
 
@@ -37,6 +39,9 @@ func main() {
 	defer client.Close()
 
 	app := NewApplication(client)
+	if cfg.Verbose {
+		app.Verbose = true
+	}
 	if err := realMain(ctx, app); err != nil {
 		log.Fatalf("Application failed to run: %v", err)
 	}
