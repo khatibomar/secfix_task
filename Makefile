@@ -1,10 +1,11 @@
-SOCKET_PATH := /tmp/osquery.$(shell whoami).$(shell bash -c 'echo $$RANDOM').em
+SOCKET_FILE := /tmp/osquery.socket.path
+SOCKET_PATH := $(if $(wildcard $(SOCKET_FILE)),$(shell cat $(SOCKET_FILE)),/tmp/osquery.$(shell whoami).$(shell bash -c 'echo $$RANDOM').em)
 OSQUERYD_BIN := /opt/osquery/lib/osquery.app/Contents/MacOS/osqueryd
 CONFIG_PATH := /var/osquery/osquery.conf
 LOG_DIR := /tmp/osquery_logs_$(shell whoami)
 PID_FILE := /tmp/osquery_temp.pid
 
-.PHONY: deamon-run deamon-stop deamon-status deamon-setup deamon-cleanup
+.PHONY: deamon-run deamon-stop deamon-status deamon-setup deamon-cleanup run
 
 deamon-setup:
 	sudo cp /var/osquery/osquery.example.conf /var/osquery/osquery.conf
@@ -13,6 +14,7 @@ deamon-setup:
 
 deamon-run: deamon-setup
 	@mkdir -p $(LOG_DIR)
+	@echo "$(SOCKET_PATH)" > $(SOCKET_FILE)
 	@echo "Starting temporary osqueryd..."
 	@echo "  - Socket: $(SOCKET_PATH)"
 	@echo "  - Logs: $(LOG_DIR)"
@@ -44,6 +46,7 @@ deamon-stop:
 		rm -f $(PID_FILE); \
 	fi
 	@rm -f $(SOCKET_PATH)
+	@rm -f $(SOCKET_FILE)
 	@echo "Cleaned up temporary osqueryd"
 
 deamon-status:
@@ -53,3 +56,6 @@ deamon-status:
 	else \
 		echo "osqueryd is not running"; \
 	fi
+
+run:
+	go run ./cmd/osquery -socket-path=$(SOCKET_PATH)
