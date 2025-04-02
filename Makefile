@@ -7,8 +7,9 @@ PID_FILE := /tmp/osquery_temp.pid
 BUILD_DIR := ./bin
 APP_NAME := osquery
 API_NAME := api
+UI_NAME := ui
 
-.PHONY: deamon-run deamon-stop deamon-status deamon-setup deamon-cleanup gen build run build-api api docker-up docker-down db-up
+.PHONY: deamon-run deamon-stop deamon-status deamon-setup deamon-cleanup gen build run build-api api docker-up docker-down db-up ui build-ui
 
 # Deamon
 deamon-setup:
@@ -75,6 +76,14 @@ build-api: gen
 	@mkdir -p $(BUILD_DIR)
 	go build -o $(BUILD_DIR)/$(API_NAME) ./cmd/api
 
+build-ui: 
+	@echo "Building ui..."
+	@mkdir -p $(BUILD_DIR)
+	cd cmd/ui && go build -o ../../$(BUILD_DIR)/$(UI_NAME)
+
+ui: build-ui
+	$(BUILD_DIR)/$(UI_NAME)
+
 api: build-api
 	SECFIX_CONNECTION_STRING="postgres://postgres:postgres@localhost:5430/postgres?sslmode=disable" $(BUILD_DIR)/$(API_NAME) $(ARGS) 
 
@@ -94,3 +103,6 @@ docker-down:
 db-up:
 	@echo "Running migrations..."
 	DATABASE_URL="postgres://postgres@127.0.0.1:5430/postgres?sslmode=disable" dbmate -d ./data/sql/migrations up
+
+curl:
+	curl localhost:4000/v1/latest_data
