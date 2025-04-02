@@ -33,9 +33,11 @@ func main() {
 	var cfg Config
 	var err error
 
+	ctx := context.Background()
 	logger := log.Default()
 
-	ctx := context.Background()
+	logger.Println("Commit Hash:", getCommitHash())
+	logger.Println("Git Tag:", getGitTag())
 
 	parseFlags(&cfg)
 
@@ -58,9 +60,7 @@ func main() {
 
 	db := database.New(conn)
 	app := NewApplication(logger, db, client)
-	if cfg.Verbose {
-		app.Verbose = true
-	}
+	app.Verbose = cfg.Verbose
 	if err := realMain(ctx, app); err != nil {
 		log.Fatalf("Application failed to run: %v", err)
 	}

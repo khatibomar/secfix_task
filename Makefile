@@ -4,8 +4,10 @@ OSQUERYD_BIN := /opt/osquery/lib/osquery.app/Contents/MacOS/osqueryd
 CONFIG_PATH := /var/osquery/osquery.conf
 LOG_DIR := /tmp/osquery_logs_$(shell whoami)
 PID_FILE := /tmp/osquery_temp.pid
+BUILD_DIR := ./bin
+APP_NAME := osquery
 
-.PHONY: deamon-run deamon-stop deamon-status deamon-setup deamon-cleanup gen run docker-up docker-down db-up
+.PHONY: deamon-run deamon-stop deamon-status deamon-setup deamon-cleanup gen build run docker-up docker-down db-up
 
 # Deamon
 deamon-setup:
@@ -62,8 +64,13 @@ deamon-status:
 gen:
 	sqlc generate
 
-run: gen 
-	SECFIX_CONNECTION_STRING="postgres://postgres:postgres@localhost:5430/postgres?sslmode=disable" go run ./cmd/osquery -socket-path=$(SOCKET_PATH) $(ARGS)
+build: gen
+	@echo "Building application..."
+	@mkdir -p $(BUILD_DIR)
+	go build -o $(BUILD_DIR)/$(APP_NAME) ./cmd/osquery
+
+run: build
+	SECFIX_CONNECTION_STRING="postgres://postgres:postgres@localhost:5430/postgres?sslmode=disable" $(BUILD_DIR)/$(APP_NAME) -socket-path=$(SOCKET_PATH) $(ARGS)
 
 # Docker
 docker-up:
