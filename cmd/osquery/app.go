@@ -84,7 +84,7 @@ func (app *Application) Run(ctx context.Context) error {
 
 	appsSnapshot, err := app.Database.InsertAppsSnapshot(ctx, appNames)
 	if err != nil {
-		return fmt.Errorf("failed to take versions snap shot: %w", err)
+		return fmt.Errorf("failed to take apps snap shot: %w", err)
 	}
 	app.info("apps snapshot taken successfully with id = %d", appsSnapshot.ID)
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -44,7 +45,12 @@ func main() {
 	}
 	defer client.Close()
 
-	conn, err := pgx.Connect(ctx, "postgres://postgres:postgres@localhost:5430/postgres?sslmode=disable")
+	connString := os.Getenv("SECFIX_CONNECTION_STRING")
+	if connString == "" {
+		log.Fatalf("Connection string is empty, please set env variable SECFIX_CONNECTION_STRING")
+	}
+
+	conn, err := pgx.Connect(ctx, connString)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}

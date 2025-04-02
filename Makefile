@@ -63,7 +63,7 @@ gen:
 	sqlc generate
 
 run: gen 
-	go run ./cmd/osquery -socket-path=$(SOCKET_PATH) $(ARGS)
+	SECFIX_CONNECTION_STRING="postgres://postgres:postgres@localhost:5430/postgres?sslmode=disable" go run ./cmd/osquery -socket-path=$(SOCKET_PATH) $(ARGS)
 
 # Docker
 docker-up:
