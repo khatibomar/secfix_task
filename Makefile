@@ -87,7 +87,7 @@ ui: build-ui
 api: build-api
 	SECFIX_CONNECTION_STRING="postgres://postgres:postgres@localhost:5430/postgres?sslmode=disable" $(BUILD_DIR)/$(API_NAME) $(ARGS) 
 
-app: build
+app: build-app
 	SECFIX_CONNECTION_STRING="postgres://postgres:postgres@localhost:5430/postgres?sslmode=disable" $(BUILD_DIR)/$(APP_NAME) -socket-path=$(SOCKET_PATH) $(ARGS)
 
 # Docker
