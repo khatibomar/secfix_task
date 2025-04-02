@@ -10,7 +10,7 @@
 I am running this on macos, so first install [queryos](https://osquery.io/downloads)
 
 ```sh
-make deamon-start
+make deamon-run
 ```
 
 if all good then you will see the following output
@@ -24,7 +24,7 @@ if all good then you will see the following output
 after that, to take snapshot of `os version`, `os query version` and `installed apps` run this.
 
 ```sh
-make app --socket-path=/tmp/osquery.omarelkhatib.29085.em -verbose
+make app
 ```
 
 time to expose this data as an API to run the api
