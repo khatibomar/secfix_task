@@ -7,8 +7,7 @@ import (
 func (app *application) latestDataHandler(w http.ResponseWriter, r *http.Request) {
 	info, err := app.db.GetLatestOSInfo(app.ctx)
 	if err != nil {
-		app.logger.Error(err.Error())
-		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
+    		app.serverErrorResponse(w, r, err)
 	}
 
 	apps, err := app.db.GetLatestAppsSnapshot(app.ctx)
