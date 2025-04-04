@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/khatibomar/secfix_challenge/internal/database"
 )
@@ -52,13 +52,13 @@ func main() {
 		log.Fatalf("Connection string is empty, please set env variable SECFIX_CONNECTION_STRING")
 	}
 
-	conn, err := pgx.Connect(ctx, connString)
+	pool, err := pgxpool.New(ctx, connString)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer conn.Close(ctx)
+	defer pool.Close()
 
-	db := database.New(conn)
+	db := database.New(pool)
 
 	app := &application{
 		ctx:    ctx,

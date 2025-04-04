@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -22,7 +23,19 @@ type Response struct {
 	} `json:"apps"`
 }
 
+type config struct {
+	Address string
+}
+
+func parseFlags(cfg *config) {
+	flag.StringVar(&cfg.Address, "address", "http://localhost:4000", "API address")
+	flag.Parse()
+}
+
 func main() {
+	var cfg config
+	parseFlags(&cfg)
+
 	_ = ActivateTheme("azure light")
 	var scroll *TScrollbarWidget
 
@@ -34,7 +47,7 @@ func main() {
 	GridColumnConfigure(App, 0, Weight(1))
 	Grid(TExit(), Padx("1m"), Pady("2m"), Ipadx("1m"), Ipady("1m"))
 
-	resp, err := http.Get("http://localhost:4000/v1/latest_data")
+	resp, err := http.Get(cfg.Address + "/v1/latest_data")
 	if err != nil {
 		t.Replace("1.0", "end", fmt.Sprintf("Error reading response: %v\n", err))
 	}
