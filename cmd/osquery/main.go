@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	_ "github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/khatibomar/secfix_challenge/internal"
 	"github.com/khatibomar/secfix_challenge/internal/database"
@@ -31,8 +30,10 @@ func parseFlags(cfg *config) {
 }
 
 func main() {
-	var cfg config
-	var err error
+	var (
+		cfg config
+		err error
+	)
 
 	ctx := context.Background()
 	logger := log.Default()
@@ -60,18 +61,14 @@ func main() {
 	defer conn.Close(ctx)
 
 	db := database.New(conn)
-	app := &Application{
+	app := &application{
 		osQueryClient: client,
 		db:            db,
 		log:           logger,
 		verbose:       cfg.Verbose,
 	}
 
-	if err := realMain(ctx, app); err != nil {
+	if err := app.Run(ctx); err != nil {
 		log.Fatalf("Application failed to run: %v", err)
 	}
-}
-
-func realMain(ctx context.Context, app *Application) error {
-	return app.Run(ctx)
 }

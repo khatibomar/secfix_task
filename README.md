@@ -1,3 +1,5 @@
+![CI status](https://github.com/khatibomar/secfix_task/actions/workflows/main.yml/badge.svg)
+
 # Prerequisite:
 - osquery
 - dbmate

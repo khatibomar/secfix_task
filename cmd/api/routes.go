@@ -3,16 +3,14 @@ package main
 import (
 	"expvar"
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 func (app *application) routes() http.Handler {
-	router := httprouter.New()
+	mux := http.NewServeMux()
 
-	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
-	router.HandlerFunc(http.MethodGet, "/v1/latest_data", app.latestDataHandler)
-	router.Handler(http.MethodGet, "/debug/vars", expvar.Handler())
+	mux.HandleFunc("GET /v1/healthcheck", app.healthcheckHandler)
+	mux.HandleFunc("GET /v1/latest_data", app.latestDataHandler)
+	mux.Handle("GET /debug/vars", expvar.Handler())
 
-	return app.logRequest(app.recoverPanic(app.enableCORS(router)))
+	return app.logRequest(app.recoverPanic(app.enableCORS(mux)))
 }
