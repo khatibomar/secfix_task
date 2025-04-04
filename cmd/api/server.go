@@ -26,19 +26,8 @@ func (app *application) serve() error {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer shutdownCancel()
 
-		done := make(chan bool)
-
-		go func() {
-			srv.Shutdown(shutdownCtx)
-			close(done)
-		}()
-
-		select {
-		case <-done:
-			app.logger.Info("servers shutdown successfully")
-		case <-shutdownCtx.Done():
-			app.logger.Warn("server shutdown timed out")
-		}
+		shutdownError <- srv.Shutdown(shutdownCtx)
+		close(shutdownError)
 	}()
 
 	app.logger.Info("starting server", "addr", srv.Addr, "env", app.config.env)
