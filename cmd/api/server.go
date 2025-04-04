@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 )
 
@@ -24,13 +21,24 @@ func (app *application) serve() error {
 
 	shutdownError := make(chan error)
 	go func() {
-		quit := make(chan os.Signal, 1)
-		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-		s := <-quit
-		app.logger.Info("shutting down server", "signal", s.String())
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-		shutdownError <- srv.Shutdown(ctx)
+		<-app.ctx.Done()
+
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer shutdownCancel()
+
+		done := make(chan bool)
+
+		go func() {
+			srv.Shutdown(shutdownCtx)
+			close(done)
+		}()
+
+		select {
+		case <-done:
+			app.logger.Info("servers shutdown successfully")
+		case <-shutdownCtx.Done():
+			app.logger.Warn("server shutdown timed out")
+		}
 	}()
 
 	app.logger.Info("starting server", "addr", srv.Addr, "env", app.config.env)

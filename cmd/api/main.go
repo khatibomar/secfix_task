@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"os/signal"
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -43,7 +44,8 @@ func main() {
 
 	parseFlags(&cfg)
 
-	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	defer cancel()
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
