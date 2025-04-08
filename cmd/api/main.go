@@ -6,9 +6,10 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"os/signal"
 	"strings"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/khatibomar/secfix_challenge/internal/database"
 )
@@ -43,7 +44,8 @@ func main() {
 
 	parseFlags(&cfg)
 
-	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	defer cancel()
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
@@ -52,13 +54,13 @@ func main() {
 		log.Fatalf("Connection string is empty, please set env variable SECFIX_CONNECTION_STRING")
 	}
 
-	conn, err := pgx.Connect(ctx, connString)
+	pool, err := pgxpool.New(ctx, connString)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer conn.Close(ctx)
+	defer pool.Close()
 
-	db := database.New(conn)
+	db := database.New(pool)
 
 	app := &application{
 		ctx:    ctx,

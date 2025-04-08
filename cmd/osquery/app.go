@@ -12,19 +12,19 @@ const appsQuery = "SELECT name FROM apps;"
 const osVersionQuery = "SELECT version FROM os_version;"
 const osQueryVersionQuery = "SELECT version FROM osquery_info;"
 
-type OSQueryClient interface {
+type osQueryClient interface {
 	QueryRowContext(ctx context.Context, query string) (map[string]string, error)
 	QueryRowsContext(ctx context.Context, query string) ([]map[string]string, error)
 }
 
-type Application struct {
-	osQueryClient OSQueryClient
+type application struct {
+	osQueryClient osQueryClient
 	db            database.Querier
 	log           *log.Logger
 	verbose       bool
 }
 
-func (app *Application) Run(ctx context.Context) error {
+func (app *application) Run(ctx context.Context) error {
 	app.debug("Starting application run")
 
 	var osVersion string
@@ -79,12 +79,12 @@ func (app *Application) Run(ctx context.Context) error {
 	return nil
 }
 
-func (app *Application) debug(format string, v ...any) {
+func (app *application) debug(format string, v ...any) {
 	if app.verbose {
 		app.log.Printf("APP: [DEBUG] "+format, v...)
 	}
 }
 
-func (app *Application) info(format string, v ...any) {
+func (app *application) info(format string, v ...any) {
 	app.log.Printf("APP: [INFO] "+format, v...)
 }
