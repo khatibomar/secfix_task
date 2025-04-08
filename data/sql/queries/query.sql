@@ -15,7 +15,7 @@ VALUES ($1)
 RETURNING id, snapshot_time, installed_apps;
 
 -- name: GetLatestAppsSnapshot :one
-SELECT id, snapshot_time, installed_apps 
+SELECT id, snapshot_time, installed_apps[$1::int:$2::int]::text[] as installed_apps 
 FROM system_snapshots 
 ORDER BY snapshot_time DESC 
 LIMIT 1;

@@ -7,18 +7,31 @@ package database
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const getLatestAppsSnapshot = `-- name: GetLatestAppsSnapshot :one
-SELECT id, snapshot_time, installed_apps 
+SELECT id, snapshot_time, installed_apps[$1::int:$2::int]::text[] as installed_apps 
 FROM system_snapshots 
 ORDER BY snapshot_time DESC 
 LIMIT 1
 `
 
-func (q *Queries) GetLatestAppsSnapshot(ctx context.Context) (SystemSnapshot, error) {
-	row := q.db.QueryRow(ctx, getLatestAppsSnapshot)
-	var i SystemSnapshot
+type GetLatestAppsSnapshotParams struct {
+	Column1 int32 `db:"column_1"`
+	Column2 int32 `db:"column_2"`
+}
+
+type GetLatestAppsSnapshotRow struct {
+	ID            int32            `db:"id"`
+	SnapshotTime  pgtype.Timestamp `db:"snapshot_time"`
+	InstalledApps []string         `db:"installed_apps"`
+}
+
+func (q *Queries) GetLatestAppsSnapshot(ctx context.Context, arg GetLatestAppsSnapshotParams) (GetLatestAppsSnapshotRow, error) {
+	row := q.db.QueryRow(ctx, getLatestAppsSnapshot, arg.Column1, arg.Column2)
+	var i GetLatestAppsSnapshotRow
 	err := row.Scan(&i.ID, &i.SnapshotTime, &i.InstalledApps)
 	return i, err
 }

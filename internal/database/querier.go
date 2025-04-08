@@ -9,7 +9,7 @@ import (
 )
 
 type Querier interface {
-	GetLatestAppsSnapshot(ctx context.Context) (SystemSnapshot, error)
+	GetLatestAppsSnapshot(ctx context.Context, arg GetLatestAppsSnapshotParams) (GetLatestAppsSnapshotRow, error)
 	GetLatestOSInfo(ctx context.Context) (InfoHistory, error)
 	InsertAppsSnapshot(ctx context.Context, installedApps []string) (SystemSnapshot, error)
 	InsertOSSnapshot(ctx context.Context, arg InsertOSSnapshotParams) (InfoHistory, error)
